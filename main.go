@@ -16,7 +16,7 @@ func main() {
 	dbConfig := config.DataBase
 	db:= DB.CreateDB(dbConfig)
 	
-	 tvHandler := c.TVHandler{Db : db}
+	tvHandler := c.TVHandler{Db : db}
 
 	r := mux.NewRouter()
 	r.HandleFunc("/api/tvs", tvHandler.GetTVs).Methods("GET")

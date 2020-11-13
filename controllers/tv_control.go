@@ -10,35 +10,39 @@ import (
 	DB "github.com/EtoNeJa00/Rest_Api_TV/database"
 )
 
-
-
 type TVHandler struct {
 	Db *sql.DB
 }
 func (h *TVHandler) GetTVs(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
+
 	TVs, err := DB.GetAllTV(h.Db)
 	if err != nil{
 		w.WriteHeader(http.StatusInternalServerError)
 		return
-	}	
+	}
+
 	json.NewEncoder(w).Encode(TVs)
 }
 func (h *TVHandler) GetTV(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
+	
 	params := mux.Vars(r)
 	id, err := strconv.Atoi(params["id"])
 	if err != nil{
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}	
+	
 	tv, err := DB.GetTVbyID(h.Db, id)
 	if (err!= nil)||(tv.Id==0) {
 		w.WriteHeader(http.StatusNotFound)
-		return
+		return	
 	}	
-   json.NewEncoder(w).Encode(tv)
+
+	json.NewEncoder(w).Encode(tv)
 }
+
 func (h *TVHandler) AddTV(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	
@@ -61,24 +65,31 @@ func (h *TVHandler) AddTV(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
+
 	json.NewEncoder(w).Encode(tv)
 }
+
 func (h *TVHandler) DeleteTV(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
+	
 	params := mux.Vars(r)
 	id, err := strconv.Atoi(params["id"])
 	if err!= nil{
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
+	
 	tv, err := DB.GetTVbyID(h.Db, id)
 	if (err!= nil)||(tv.Id==0) {
 		w.WriteHeader(http.StatusNotFound)
 		return
 	}	
+	
 	err = DB.DeleteTV (h.Db, id)
 	if (err!= nil){
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
+
+	json.NewEncoder(w).Encode(tv)
 }

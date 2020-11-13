@@ -20,11 +20,13 @@ type JsonTVDec struct{
 	Model string		`json:"Model"`
 	Year string			`json:"Year"`
 }
+
 func (t *TVModel) Parse(j JsonTVDec) error{
 	year, err := strconv.Atoi(j.Year)
 	if err != nil{
 		return err
 	}
+
 	if (len(j.Manufacturer) >= 3)&&(len(j.Model) >= 2)&&(year >= 2010){
 		t.Brand = j.Brand
 		t.Manufacturer = j.Manufacturer
