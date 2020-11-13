@@ -1,7 +1,6 @@
 package controllers
 
 import (
-	"fmt"
 	"github.com/EtoNeJa00/Rest_Api_TV/models"
 	"encoding/json"
 	"strconv"
@@ -18,32 +17,48 @@ type TVHandler struct {
 }
 func (h *TVHandler) GetTVs(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
-	TVs := DB.GetAllTV(h.Db)
+	TVs, err := DB.GetAllTV(h.Db)
+	if err != nil{
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}	
 	json.NewEncoder(w).Encode(TVs)
 }
 func (h *TVHandler) GetTV(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	params := mux.Vars(r)
 	id, err := strconv.Atoi(params["id"])
-	tv := DB.GetTVbyID(h.Db, id)
-	if (err!= nil)||(id==0) {
+	if err != nil{
+		w.WriteHeader(http.StatusBadRequest)
+		return
+	}	
+	tv, err := DB.GetTVbyID(h.Db, id)
+	if (err!= nil)||(tv.Id==0) {
 		w.WriteHeader(http.StatusNotFound)
 		return
-	}
+	}	
    json.NewEncoder(w).Encode(tv)
 }
 func (h *TVHandler) AddTV(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
+	
 	var tv models.TVModel 
 	var tempTV models.JsonTVDec
-	errj := json.NewDecoder(r.Body).Decode(&tempTV)
-	tv.Parse(tempTV)
-	err :=	DB.AddTV(h.Db, tv)
-	fmt.Println(err)
-	if (err!=nil) || (errj!=nil){
+	err := json.NewDecoder(r.Body).Decode(&tempTV)
+	if (err!= nil){
 		w.WriteHeader(http.StatusBadRequest)
-		json.NewEncoder(w).Encode(errj)
-		json.NewEncoder(w).Encode(err)
+		return
+	}
+	
+	err = tv.Parse(tempTV)
+	if (err!= nil){
+		w.WriteHeader(http.StatusBadRequest)
+		return
+	}
+
+	err = DB.AddTV(h.Db, tv)
+	if (err!= nil){
+		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
 	json.NewEncoder(w).Encode(tv)
@@ -53,8 +68,17 @@ func (h *TVHandler) DeleteTV(w http.ResponseWriter, r *http.Request) {
 	params := mux.Vars(r)
 	id, err := strconv.Atoi(params["id"])
 	if err!= nil{
-		w.WriteHeader(http.StatusNotFound)
+		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
-	DB.DeleteTV (h.Db, id)
+	tv, err := DB.GetTVbyID(h.Db, id)
+	if (err!= nil)||(tv.Id==0) {
+		w.WriteHeader(http.StatusNotFound)
+		return
+	}	
+	err = DB.DeleteTV (h.Db, id)
+	if (err!= nil){
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
 }

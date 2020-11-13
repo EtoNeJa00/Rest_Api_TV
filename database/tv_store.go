@@ -7,12 +7,11 @@ import (
 	
 )
 
-func GetAllTV(db *sql.DB) ([]models.TVModel){
+func GetAllTV(db *sql.DB) ([]models.TVModel, error){
     rows, err := db.Query("SELECT * FROM tv")
     if err!=nil {
-        fmt.Print(err)
+        return nil, err
     }
-
     TVs := []models.TVModel{}  
 	for rows.Next(){
  
@@ -24,19 +23,22 @@ func GetAllTV(db *sql.DB) ([]models.TVModel){
         }
         TVs = append(TVs, tv)
    }
-   return TVs
+   return TVs, err
 }
 
-func GetTVbyID (db *sql.DB, id int) (models.TVModel){
+func GetTVbyID (db *sql.DB, id int) (models.TVModel, error){
    
-    rows := db.QueryRow("SELECT * FROM tv WHERE id=$1;", id)
+    row, err := db.Query("SELECT * FROM tv WHERE id=$1;", id)
     tv := models.TVModel{}
-    err := rows.Scan(&tv.Id,&tv.Brand, &tv.Year, &tv.Manufacturer, &tv.Model)
     if err != nil{
-        fmt.Println(err)
+        return tv, err
+    }    
+    row.Next()
+    err = row.Scan(&tv.Id,&tv.Brand, &tv.Year, &tv.Manufacturer, &tv.Model)
+    if err != nil{
+        return tv, err
     }
-
-    return tv
+    return tv, nil
 }
 
 func AddTV (db *sql.DB, tv models.TVModel) error{
@@ -44,7 +46,8 @@ func AddTV (db *sql.DB, tv models.TVModel) error{
     return err
 }
 
-func DeleteTV (db *sql.DB, id int) ( error){
-    _,  err := db.Exec("DELETE FROM tv WHERE id=$1;", id)
+func DeleteTV (db *sql.DB, id int) error{
+    res,  err := db.Exec("DELETE FROM tv WHERE id=$1;", id)
+    fmt.Println(res,"hhh")
     return err
 }

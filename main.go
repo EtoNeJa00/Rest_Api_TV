@@ -23,7 +23,7 @@ func main() {
 	r.HandleFunc("/api/tvs", tvHandler.AddTV).Methods("POST")
 	r.HandleFunc("/api/tvs/{id}", tvHandler.GetTV).Methods("GET")
 	r.HandleFunc("/api/tvs/{id}", tvHandler.DeleteTV).Methods("DELETE")
-	http.ListenAndServe(":8000", r)
+	http.ListenAndServe(":8080", r)
 }
 
 
